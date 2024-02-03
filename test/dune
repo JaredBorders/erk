@@ -1,0 +1,5 @@
+(tests
+ (names erk_test)
+ (libraries erk)
+ (preprocess
+  (pps ppx_jane)))

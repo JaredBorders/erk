@@ -1,0 +1,5 @@
+steps:
+    - name: Check OCaml Formatting
+      run: |
+          opam install ocamlformat
+          find . -name '*.ml' -or -name '*.mli' | xargs ocamlformat --check

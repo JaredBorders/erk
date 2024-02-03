@@ -1,0 +1,6 @@
+(library
+ (name erk)
+ (public_name erk)
+ (libraries core async ppx_jane digestif)
+ (preprocess
+  (pps ppx_jane)))
