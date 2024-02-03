@@ -1,6 +1,7 @@
 (library
  (name erk)
  (public_name erk)
+ (inline_tests)
  (libraries core async ppx_jane digestif)
  (preprocess
   (pps ppx_jane)))

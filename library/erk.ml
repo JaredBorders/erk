@@ -1,15 +1,13 @@
-type 'a binary_tree =
-  | Empty
-  | Node of 'a * 'a binary_tree * 'a binary_tree
+(* Define a type for Merkle tree nodes *)
+type merkle_tree =
+  | Leaf of string
+  | Node of string * merkle_tree * merkle_tree
 
-let rec string_of_tree to_string = function
-  | Empty -> "Empty"
-  | Node (value, left, right) ->
-    "Node ("
-    ^ to_string value
-    ^ ", "
-    ^ string_of_tree to_string left
-    ^ ", "
-    ^ string_of_tree to_string right
-    ^ ")"
+(* Function to compute SHA256 hash of a string *)
+let hash_string s = Digestif.SHA256.(to_hex (digest_string s))
+
+let%test "Testing hashing a string..." =
+  String.equal
+    (hash_string "potato")
+    "e91c254ad58860a02c788dfb5c1a65d6a8846ab1dc649631c7db16fef4af2dec"
 ;;
