@@ -212,3 +212,8 @@ let generate_proof (tree : merkle_tree) leaf =
   match tree, leaf with
   | _, _ -> failwith "Not implemented"
 ;;
+
+let verify_proof root leaf proof =
+  match root, leaf, proof with
+  | _, _, _ -> failwith "Not implemented"
+;;
