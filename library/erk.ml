@@ -22,20 +22,20 @@ let%test "Testing concatenating and hashing two strings..." =
 ;;
 
 let get_hashes leaves hash fill =
-  let rec f' acc = function
+  let rec f acc = function
     | [] -> List.rev acc
-    | x :: y :: rest -> f' (hash x y :: acc) rest
+    | x :: y :: rest -> f (hash x y :: acc) rest
     | x :: _ -> List.rev (hash x fill :: acc)
   in
-  let rec f'' (acc : 'a list) = function
+  let rec f' (acc : 'a list) = function
     | [] | [ _ ] -> acc
     | lst ->
-      let result = f' [] lst in
-      f'' (result @ acc) result
+      let result = f [] lst in
+      f' (result @ acc) result
   in
   (if List.length leaves = 1
-   then f'' [ hash (List.hd_exn leaves) fill ] leaves
-   else f'' [] leaves)
+   then f' [ hash (List.hd_exn leaves) fill ] leaves
+   else f' [] leaves)
   @ leaves
 ;;
 
@@ -76,30 +76,57 @@ let%test "Testing get_hashes..." =
        [ 24000; 20; 120; 1; 2; 3; 4 ]
 ;;
 
-(* let merkle_tree_from_list leaves =
-   match validate_list_length leaves with
-   | false -> failwith "merkle_tree_from_list: invalid list length"
-   | true -> Empty
-   ;;
+let get_children idx = (idx * 2) + 1, (idx * 2) + 2
 
-   let example_array_of_leaves = [ "a"; "b"; "c"; "d" ]
+let%test "Testing get_children..." =
+  [%compare.equal: int * int] (get_children 1) (3, 4)
+  && [%compare.equal: int * int] (get_children 3) (7, 8)
+;;
 
-   let example_merkle_tree =
-   let leaf1 = List.nth_exn example_array_of_leaves 0 in
-   let leaf2 = List.nth_exn example_array_of_leaves 1 in
-   let leaf3 = List.nth_exn example_array_of_leaves 2 in
-   let leaf4 = List.nth_exn example_array_of_leaves 3 in
-   let digest_1 = concat_hash leaf1 leaf2 in
-   let digest_2 = concat_hash leaf3 leaf4 in
-   let root = concat_hash digest_1 digest_2 in
-   Node
-   ( root
-   , Node (digest_1, Node (leaf1, Empty, Empty), Node (leaf2, Empty, Empty))
-   , Node (digest_2, Node (leaf3, Empty, Empty), Node (leaf4, Empty, Empty)) )
-   ;;
+let%test "" =
+  let test_list =
+    [ "abcdefgh"
+    ; "abcd"
+    ; "efgh"
+    ; "ab"
+    ; "cd"
+    ; "ef"
+    ; "gh"
+    ; "a"
+    ; "b"
+    ; "c"
+    ; "d"
+    ; "e"
+    ; "f"
+    ; "g"
+    ; "h"
+    ]
+  in
+  [%compare.equal: string * string]
+    ( List.nth_exn test_list (fst (get_children 3))
+    , List.nth_exn test_list (snd (get_children 3)) )
+    ("a", "b")
+;;
 
-   let%test "Testing merkle_tree_from_list..." =
-   [%compare.equal: merkle_tree]
-   example_merkle_tree
-   (merkle_tree_from_list example_array_of_leaves)
-   ;; *)
+let create hash find fill leaves =
+  let hashes = get_hashes leaves hash fill in
+  let rec build_tree current cont =
+    match find current with
+    | a, b when b < List.length hashes ->
+      build_tree a (fun aTree ->
+        build_tree b (fun bTree ->
+          cont (Node (List.nth_exn hashes current, aTree, bTree))))
+    | _ -> cont (Node (List.nth_exn hashes current, Empty, Empty))
+  in
+  build_tree 0 (fun t -> t)
+;;
+
+let%test "" =
+  let test_list = [ "a"; "b"; "c"; "d" ] in
+  [%compare.equal: merkle_tree]
+    (create (fun x y -> x ^ y) get_children "" test_list)
+    (Node
+       ( "abcd"
+       , Node ("ab", Node ("a", Empty, Empty), Node ("b", Empty, Empty))
+       , Node ("cd", Node ("c", Empty, Empty), Node ("d", Empty, Empty)) ))
+;;
