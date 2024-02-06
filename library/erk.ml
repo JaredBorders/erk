@@ -207,3 +207,8 @@ let%test "Testing create with list containing eight elements..." =
            , Node ("ef", Node ("e", Empty, Empty), Node ("f", Empty, Empty))
            , Node ("gh", Node ("g", Empty, Empty), Node ("h", Empty, Empty)) ) ))
 ;;
+
+let generate_proof (tree : merkle_tree) leaf =
+  match tree, leaf with
+  | _, _ -> failwith "Not implemented"
+;;
